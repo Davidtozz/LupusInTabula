@@ -33,7 +33,6 @@ application {
     mainClass.set("it.unicam.cs.mpgc.rpg125950.lupusintabula.Main")
     applicationDefaultJvmArgs = listOf(
         "--enable-native-access=javafx.graphics",
-        "--add-opens=org.hibernate.orm.core/org.hibernate.internal=org.jboss.logging"
         )
 }
 
