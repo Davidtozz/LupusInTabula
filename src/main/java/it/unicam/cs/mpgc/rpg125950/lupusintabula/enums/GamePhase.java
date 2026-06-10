@@ -16,5 +16,14 @@ public enum GamePhase {
     /**
      * Indica la Fase giorno: Tutti i giocatori votano il presunto lupo in base ai fatti accaduti la notte precedente
      * */
-    DAY_VOTING
+    DAY_VOTING;
+
+    /**
+     * Restituisce la fase successiva in modo ciclico (dopo DAY_VOTING torna a NIGHT_WOLVES)
+     * */
+    public GamePhase next() {
+        GamePhase[] phases = values();
+        int nextOrdinal = (this.ordinal() + 1) % phases.length;
+        return phases[nextOrdinal];
+    }
 }
