@@ -10,10 +10,6 @@ public enum GamePhase {
      * */
     NIGHT_SEER,
     /**
-     * Indica la Fase giorno: Tutti i giocatori discutono il presunto lupo in base ai fatti accaduti la notte precedente
-     * */
-    DAY_DISCUSSION,
-    /**
      * Indica la Fase giorno: Tutti i giocatori votano il presunto lupo in base ai fatti accaduti la notte precedente
      * */
     DAY_VOTING;
@@ -25,5 +21,14 @@ public enum GamePhase {
         GamePhase[] phases = values();
         int nextOrdinal = (this.ordinal() + 1) % phases.length;
         return phases[nextOrdinal];
+    }
+
+    @Override
+    public String toString() {
+        return switch (this) {
+            case NIGHT_WOLVES -> "Night Wolves";
+            case NIGHT_SEER -> "Night Seer";
+            case DAY_VOTING -> "Day Voting";
+        };
     }
 }

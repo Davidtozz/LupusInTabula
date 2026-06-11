@@ -17,4 +17,13 @@ public enum PlayerRole {
     public static PlayerRole getRandomRole()  {
         return values.get(r.nextInt(values.size()));
     }
+
+    @Override
+    public String toString() {
+        return switch (this) {
+            case FARMER -> "Farmer";
+            case WOLF -> "Wolf";
+            case OVERSEER -> "Overseer";
+        };
+    }
 }

@@ -1,8 +1,9 @@
-package it.unicam.cs.mpgc.rpg125950.lupusintabula.models;
+package it.unicam.cs.mpgc.rpg125950.lupusintabula.core;
 
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.PlayerRole;
-import lombok.Data;
+import javafx.beans.property.SimpleBooleanProperty;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.java.Log;
 
 
@@ -13,6 +14,7 @@ public sealed class Player permits PlayerAi {
     @Getter
     private final PlayerRole role;
     @Getter
+    @Setter
     private boolean isAlive;
 
     public Player(String name, PlayerRole role) {
@@ -31,20 +33,6 @@ public sealed class Player permits PlayerAi {
         return this.role == PlayerRole.OVERSEER;
     }
 
-    public void performAction(Player target) {
-        if(!target.isAlive()) {
-            throw new IllegalStateException("Player " + name + " is not alive.");
-        }
-        switch(this.role) {
-            case PlayerRole.WOLF -> {
-                target.isAlive = false; // Wolves kill the target
-                log.info(name + " (Lupo) ha ucciso " + target.getName());
-            }
-            case PlayerRole.OVERSEER
-                    -> log.info(name + " (Veggente) ha ispezionato " + target.getName() + " e ha scoperto che è un " + target.getRole());
-            default -> {}
-        }
-    }
 
     @Override
     public String toString() {

@@ -14,25 +14,24 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 
-    <Label text="Nome giocatore"/>
+    <Label fx:id="playerNameLabel" text="Nome giocatore"/>
     <TextField fx:id="playerNameField" text="Tu"
                promptText="Inserisci il tuo nome"/>
     <HBox spacing="8.0">
         <Button fx:id="createGameButton" text="Inizia partita" onAction="#onCreateGameClick"/>
     </HBox>
 
-    <Label fx:id="phaseLabel"/>
+    <Label fx:id="phaseLabel" visible="false"/>
     <Label fx:id="roleLabel"/>
-    <ListView fx:id="playersList" prefHeight="180.0"/>
+    <ListView fx:id="playersList" visible="false" prefHeight="180.0"/>
 
-    <HBox spacing="8.0">
+    <HBox fx:id="playerActions" visible="false" spacing="8.0">
+        <Button fx:id="voteButton" text="Vota" onAction="#onVoteClick"/>
         <Button fx:id="wolvesAttackButton" text="Attacca" onAction="#onWolvesAttackClick"/>
         <Button fx:id="inspectButton" text="Controlla" onAction="#onInspectClick"/>
-        <Button fx:id="advanceAiButton" text="Avanza giocatori" onAction="#onAdvanceAiClick"/>
-        <Button fx:id="voteButton" text="Vota" onAction="#onVoteClick"/>
         <Button fx:id="advancePhaseButton" text="(debug) Avanza fase" onAction="#onAdvancePhaseClick"/>
     </HBox>
 
-    <ListView fx:id="logList" prefHeight="120.0"/>
+    <ListView fx:id="logList" visible="false" prefHeight="120.0"/>
     <Label fx:id="statusLabel" wrapText="true"/>
 </VBox>

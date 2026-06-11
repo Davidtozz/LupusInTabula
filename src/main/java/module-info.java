@@ -12,13 +12,14 @@ module it.unicam.cs.mpgc.rpg125950.lupusintabula {
     requires java.sql;
     requires com.h2database;
     requires annotations;
+    requires kotlin.stdlib;
 
     opens it.unicam.cs.mpgc.rpg125950.lupusintabula to javafx.fxml;
     opens it.unicam.cs.mpgc.rpg125950.lupusintabula.controller to javafx.fxml;
     opens it.unicam.cs.mpgc.rpg125950.lupusintabula.data to javafx.fxml;
     exports it.unicam.cs.mpgc.rpg125950.lupusintabula;
     exports it.unicam.cs.mpgc.rpg125950.lupusintabula.controller;
-    exports it.unicam.cs.mpgc.rpg125950.lupusintabula.models;
     exports it.unicam.cs.mpgc.rpg125950.lupusintabula.enums;
     exports it.unicam.cs.mpgc.rpg125950.lupusintabula.data;
+    exports it.unicam.cs.mpgc.rpg125950.lupusintabula.core;
 }

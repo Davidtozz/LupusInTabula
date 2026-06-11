@@ -1,7 +1,6 @@
 package it.unicam.cs.mpgc.rpg125950.lupusintabula.core;
 
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.VictoryResult;
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.Player;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ListChangeListener;
