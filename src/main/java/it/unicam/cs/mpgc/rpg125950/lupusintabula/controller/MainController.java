@@ -1,112 +1,170 @@
 package it.unicam.cs.mpgc.rpg125950.lupusintabula.controller;
 
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Game;
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.GamePhase;
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.PlayerRole;
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Player;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Giocatore;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Gioco;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.FaseGioco;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RuoloGiocatore;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.util.ControllerUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import lombok.extern.java.Log;
-
 import java.net.URL;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 @Log
 public class MainController implements Initializable {
     @FXML public Button inspectButton;
     @FXML public Button voteButton;
-    @FXML public Button wolvesAttackButton;
+    @FXML public Button buttonAttacca;
     @FXML public Button createGameButton;
     @FXML public Button advancePhaseButton;
     @FXML public Label roleLabel;
     @FXML public Label phaseLabel;
     @FXML public Label statusLabel;
     @FXML public Label playerNameLabel;
-    @FXML public ListView<Player> playersList;
+    @FXML public ListView<Giocatore> playersList;
     @FXML public ListView<String> logList;
     @FXML public TextField playerNameField;
     @FXML public HBox playerActions;
-    private Game game;
+    private Gioco gioco;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        game = new Game();
-        playersList.setItems(game.getPlayers());
+        gioco = new Gioco();
+        playersList.setItems(gioco.getGiocatori());
         phaseLabel.textProperty().bind(
-            game.getCurrentPhase().asString("Fase attuale: %s")
+            gioco.getFaseAttuale().asString("Fase attuale: %s")
         );
-        logList.setItems(game.getPlayerActionHistory());
+        logList.setItems(gioco.getStoricoAzioniGioco());
     }
 
-    public void onCreateGameClick(ActionEvent actionEvent) {
-        game.startGame(playerNameField.getText());
+    private void configuraCambioFase() {
+        Giocatore giocatore = gioco.getGiocatoreUmano();
 
-        var playerRole = game.getHumanPlayer().getRole();
-        game.logAction("Game started. You are a " + playerRole + ".");
-        roleLabel.setText("Il tuo ruolo: " + playerRole.toString());
+        gioco.getFaseAttuale().subscribe((phase) -> {
+            boolean isNightWolvesPhase = phase == FaseGioco.NOTTE_LUPI;
+            boolean isNightSeerPhase = phase == FaseGioco.NOTTE_VEGGENTE;
+            boolean isDayVotingPhase = phase == FaseGioco.VOTAZIONE_GIORNO;
 
-        setupPhaseChangeListener();
-        showGameLayout();
-        showPlayerActions(playerRole);
-    }
-
-    private void showGameLayout() {
-        ControllerUtils.showElements(phaseLabel, playersList, logList, playerActions);
-        ControllerUtils.hideElements(createGameButton);
-    }
-
-    private void setupPhaseChangeListener() {
-        Player player = game.getHumanPlayer();
-
-        game.getCurrentPhase().subscribe((phase) -> {
-            boolean isNightWolvesPhase = phase == GamePhase.NIGHT_WOLVES;
-            boolean isNightSeerPhase = phase == GamePhase.NIGHT_SEER;
-            boolean isDayVotingPhase = phase == GamePhase.DAY_VOTING;
-
-            wolvesAttackButton.setDisable(!player.isWolf() || !isNightWolvesPhase);
-            inspectButton.setDisable(!player.isOverseer() || !isNightSeerPhase);
+            buttonAttacca.setDisable(!giocatore.isLupo() || !isNightWolvesPhase);
+            inspectButton.setDisable(!giocatore.isVeggente() || !isNightSeerPhase);
             voteButton.setDisable(!isDayVotingPhase);
         });
     }
 
-    public void onVoteClick(ActionEvent actionEvent) {
+    public void onCreaPartitaClick(ActionEvent evento) {
+        gioco.iniziaPartita(playerNameField.getText());
+
+        // Ottieni il giocatore umano e registra un listener sulla sua proprietà isVivo
+        Giocatore human = gioco.getGiocatoreUmano();
+        human.isVivoProperty().addListener((_, _, newVivo) -> {
+            if (newVivo != null && !newVivo) {
+                statusLabel.setText("Sei morto.");
+                for(Node button : playerActions.getChildren()){
+                    button.setDisable(!button.equals(advancePhaseButton));
+                }
+            }
+        });
+
+        var ruoloGiocatore = human.getRuolo();
+        gioco.logAction("Gioco avviato. Sei un " + ruoloGiocatore + ".");
+        roleLabel.setText("Il tuo ruolo: " + ruoloGiocatore.toString());
+
+        configuraCambioFase();
+        mostraLayoutDiGioco();
+        mostraAzioniGiocatore(ruoloGiocatore);
+    }
+
+    public void onVotaClick(ActionEvent evento) {
+        if(nessunGiocatoreSelezionato()) {
+            new Alert(Alert.AlertType.ERROR, "Seleziona un giocatore da votare", ButtonType.OK).showAndWait();
+            return;
+        }
+
+        var bersaglioDelGiocatore = playersList.getSelectionModel().getSelectedItem();
+        gioco.avviaVotazione(bersaglioDelGiocatore);
+        playersList.refresh();
     }
     
-    public void onInspectClick(ActionEvent actionEvent) {
+    public void onIspezionaClick(ActionEvent evento) {
+        if(nessunGiocatoreSelezionato()) {
+            new Alert(Alert.AlertType.ERROR, "Seleziona un giocatore) da ispezionare", ButtonType.OK).showAndWait();
+            return;
+        }
+
+        var bersaglio = playersList.getSelectionModel().getSelectedItem();
+
+        if(bersaglio != null) {
+            gioco.getGiocatoreUmano()
+                    .ispezionaGiocatore(bersaglio)
+                    .ifPresentOrElse(
+                            // Se sono un veggente:
+                            ruolo -> gioco.logAction("(Visibile solo a te) " + bersaglio.getNome()+ " è un " + ruolo),
+                            // Altrimenti:
+                            () -> gioco.logAction("Non puoi ispezionare questo giocatore.")
+                    );
+        }
+
+        gioco.eseguiAzioniAi();
+        gioco.avanzaFase();
+        playersList.refresh();
     }
 
-    public void onWolvesAttackClick(ActionEvent actionEvent) {
-        var player = game.getHumanPlayer();
-        if(player.isWolf()) {
-            log.info("Player " + player.getName() + " is attacking...");
-            // Qui dovresti implementare la logica per selezionare un bersaglio e attaccarlo
-            var target = playersList.getSelectionModel().getSelectedItem();
-            if(target != null && target.isAlive()) {
-                target.setAlive(false);
-                game.getPlayerActionHistory().add("Player " + target.getName() + " has been attacked and is now dead.");
-            }
-        } else {
-            log.warning("Player " + player.getName() + " is not a wolf and cannot attack.");
+    public void onAttaccoClick(ActionEvent evento) {
+        if(nessunGiocatoreSelezionato()) {
+            new Alert(Alert.AlertType.ERROR, "Seleziona un giocatore da attaccare", ButtonType.OK).showAndWait();
+            return;
+        }
+        var giocatore = gioco.getGiocatoreUmano();
+        var giocatoreBersaglio = playersList.getSelectionModel().getSelectedItem();
+
+        if (giocatoreBersaglio == null || !giocatoreBersaglio.isVivo()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Seleziona un bersaglio valido", ButtonType.YES);
+            alert.showAndWait();
+            return;
+        }
+
+        Optional<Boolean> esito = giocatore.attaccaGiocatore(giocatoreBersaglio);
+        if(esito.isPresent()) {
+            gioco.logAction(giocatoreBersaglio.getNome() + " è stato ucciso da te.");
+
+            gioco.eseguiAzioniAi();
+            playersList.getSelectionModel().clearSelection();
+            playersList.refresh();
+            gioco.avanzaFase();
         }
     }
 
-    public void onAdvancePhaseClick(ActionEvent actionEvent) {
-        log.info("Advancing game phase..." + phaseLabel.getText());
-        game.advancePhase();
-        log.info("Current game phase: " + game.getCurrentPhase().toString());
+    public void onAvanzaFaseClick(ActionEvent evento) {
+        gioco.eseguiAzioniAi();
+        gioco.avanzaFase();
+        log.info("Fase di gioco attuale: " + gioco.getFaseAttuale().toString());
+        playersList.refresh();
+
     }
 
-    private void showPlayerActions(PlayerRole role) {
+     private void mostraLayoutDiGioco() {
+        ControllerUtils.mostraElementi(phaseLabel, playersList, logList, playerActions);
+        ControllerUtils.nascondiElementi(createGameButton);
+    }
+
+    private void mostraAzioniGiocatore(RuoloGiocatore role) {
         switch (role) {
-            case PlayerRole.WOLF, PlayerRole.FARMER -> ControllerUtils.hideElements(inspectButton);
-            case PlayerRole.OVERSEER -> ControllerUtils.hideElements(wolvesAttackButton);
+            case RuoloGiocatore.LUPO, RuoloGiocatore.CONTADINO -> ControllerUtils.nascondiElementi(inspectButton);
+            case RuoloGiocatore.VEGGENTE -> ControllerUtils.nascondiElementi(buttonAttacca);
         }
     }
+
+    /**
+     * @return true se non è stato selezionato alcun giocatore nella lista, false altrimenti
+     * */
+    private boolean nessunGiocatoreSelezionato() {
+        return playersList.getSelectionModel().isEmpty();
+    }
+
 }
