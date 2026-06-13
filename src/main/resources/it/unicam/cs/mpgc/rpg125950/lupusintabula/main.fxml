@@ -44,7 +44,7 @@
                 <Button fx:id="voteButton" text="Vota" onAction="#onVotaClick"/>
                 <Button fx:id="buttonAttacca" text="Attacca" onAction="#onAttaccoClick"/>
                 <Button fx:id="inspectButton" text="Indaga" onAction="#onIspezionaClick"/>
-                <Button fx:id="advancePhaseButton" text="Avanza fase" onAction="#onAvanzaFaseClick"/>
+                <Button fx:id="avanzaFaseButton" text="Avanza fase" onAction="#onAvanzaFaseClick"/>
             </HBox>
 
             <Label styleClass="section-label" text="CRONACA"/>
@@ -56,6 +56,6 @@
         <Label fx:id="playerNameLabel" text="Nome giocatore"/>
         <TextField fx:id="playerNameField" text="Tu"
                    promptText="Inserisci il tuo nome"/>
-        <Button fx:id="createGameButton" text="Inizia partita" onAction="#onCreaPartitaClick"/>
+        <Button fx:id="avviaGiocoButton" text="Inizia partita" onAction="#onCreaPartitaClick"/>
     </HBox>
 </VBox>

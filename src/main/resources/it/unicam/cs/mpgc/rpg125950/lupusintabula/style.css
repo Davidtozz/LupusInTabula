@@ -52,7 +52,7 @@
     -fx-border-color: #21262d;
 }
 
-#createGameButton {
+#avviaGiocoButton {
     -fx-background-color: #238636;
     -fx-border-color: #238636;
     -fx-text-fill: #ffffff;
@@ -60,7 +60,7 @@
     -fx-padding: 7 20;
 }
 
-#createGameButton:hover {
+#avviaGiocoButton:hover {
     -fx-background-color: #2ea043;
     -fx-border-color: #2ea043;
 }
@@ -113,17 +113,17 @@
     -fx-text-fill: #c9d1d9;
 }
 
-#advancePhaseButton {
+#avanzaFaseButton {
     -fx-border-color: #3fb950;
     -fx-text-fill: #3fb950;
 }
 
-#advancePhaseButton:hover {
+#avanzaFaseButton:hover {
     -fx-background-color: #3fb950;
     -fx-text-fill: #0d1117;
 }
 
-#advancePhaseButton:hover:disabled {
+#avanzaFaseButton:hover:disabled {
     -fx-background-color: #21262d;
     -fx-border-color: #30363d;
     -fx-text-fill: #c9d1d9;

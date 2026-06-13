@@ -7,6 +7,7 @@ import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.FaseGioco;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RisultatoVittoria;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RuoloGiocatore;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.util.ControllerUtils;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -22,8 +23,8 @@ public class MainController implements Initializable {
     @FXML public Button inspectButton;
     @FXML public Button voteButton;
     @FXML public Button buttonAttacca;
-    @FXML public Button createGameButton;
-    @FXML public Button advancePhaseButton;
+    @FXML public Button avviaGiocoButton;
+    @FXML public Button avanzaFaseButton;
     @FXML public Label roleLabel;
     @FXML public Label phaseLabel;
     @FXML public Label statusLabel;
@@ -48,9 +49,9 @@ public class MainController implements Initializable {
             if (result != RisultatoVittoria.NON_SODDISFATTO) {
                 String msg = result == RisultatoVittoria.VITTORIA_CONTADINI
                     ? "I Contadini vincono!" : "I Lupi vincono!";
-                ControllerUtils.disabilitaTutti(playerActions);
+                ControllerUtils.disabilitaTuttiEccetto(playerActions, avanzaFaseButton);
                 ControllerUtils.mostraAlertInformazione(msg);
-                resetToLobby();
+                Platform.runLater(this::resetToLobby);
             }
         });
     }
@@ -92,7 +93,7 @@ public class MainController implements Initializable {
         human.isVivoProperty().addListener((_, _, newVivo) -> {
             if (newVivo != null && !newVivo) {
                 statusLabel.setText("Sei morto.");
-                ControllerUtils.disabilitaTuttiEccetto(playerActions, advancePhaseButton);
+                ControllerUtils.disabilitaTuttiEccetto(playerActions, avanzaFaseButton);
             }
         });
 
@@ -178,6 +179,7 @@ public class MainController implements Initializable {
     }
 
     private void mostraAzioniGiocatore(RuoloGiocatore role) {
+        ControllerUtils.mostraElementi(voteButton, buttonAttacca, inspectButton);
         switch (role) {
             case RuoloGiocatore.LUPO, RuoloGiocatore.CONTADINO -> ControllerUtils.nascondiERimuoviElementi(inspectButton);
             case RuoloGiocatore.VEGGENTE -> ControllerUtils.nascondiERimuoviElementi(buttonAttacca);
