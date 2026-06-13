@@ -22,4 +22,7 @@ module it.unicam.cs.mpgc.rpg125950.lupusintabula {
     exports it.unicam.cs.mpgc.rpg125950.lupusintabula.enums;
     exports it.unicam.cs.mpgc.rpg125950.lupusintabula.data;
     exports it.unicam.cs.mpgc.rpg125950.lupusintabula.core;
+    exports it.unicam.cs.mpgc.rpg125950.lupusintabula.service;
+    exports it.unicam.cs.mpgc.rpg125950.lupusintabula.repository;
+    opens it.unicam.cs.mpgc.rpg125950.lupusintabula.repository to javafx.fxml;
 }

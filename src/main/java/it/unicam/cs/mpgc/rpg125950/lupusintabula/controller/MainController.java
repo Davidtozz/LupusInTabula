@@ -1,11 +1,11 @@
 package it.unicam.cs.mpgc.rpg125950.lupusintabula.controller;
 
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.CondizioneVittoria;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Giocatore;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Gioco;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.FaseGioco;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RisultatoVittoria;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RuoloGiocatore;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.service.GiocoService;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.util.ControllerUtils;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -34,36 +34,32 @@ public class MainController implements Initializable {
     @FXML public TextField playerNameField;
     @FXML public HBox playerActions;
     @FXML public HBox startPanel;
-    private Gioco gioco;
+    private GiocoService giocoService;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        gioco = new Gioco();
+        initLobby();
+    }
+
+    private void initLobby() {
+        this.giocoService = new GiocoService(new Gioco());
+        var gioco = this.giocoService.getGioco();
         playersList.setItems(gioco.getGiocatori());
         phaseLabel.textProperty().bind(
             gioco.getFaseAttuale().asString("Fase attuale: %s")
         );
         logList.setItems(gioco.getStoricoAzioniGioco());
 
-        CondizioneVittoria.getRisultatoVittoria().addListener((_, _, result) -> {
+        this.giocoService.getCondizioneVittoriaService().getRisultatoVittoria().addListener((_, _, result) -> {
             if (result != RisultatoVittoria.NON_SODDISFATTO) {
                 String msg = result == RisultatoVittoria.VITTORIA_CONTADINI
                     ? "I Contadini vincono!" : "I Lupi vincono!";
                 ControllerUtils.disabilitaTuttiEccetto(playerActions, avanzaFaseButton);
                 ControllerUtils.mostraAlertInformazione(msg);
-                Platform.runLater(this::resetToLobby);
+                Platform.runLater(this::initLobby);
             }
         });
-    }
 
-    private void resetToLobby() {
-        CondizioneVittoria.getRisultatoVittoria().set(RisultatoVittoria.NON_SODDISFATTO);
-        gioco = new Gioco();
-        playersList.setItems(gioco.getGiocatori());
-        phaseLabel.textProperty().bind(
-            gioco.getFaseAttuale().asString("Fase attuale: %s")
-        );
-        logList.setItems(gioco.getStoricoAzioniGioco());
         ControllerUtils.nascondiElementi(phaseLabel, playersList, logList, playerActions);
         ControllerUtils.mostraElementi(startPanel);
         roleLabel.setText("");
@@ -72,6 +68,7 @@ public class MainController implements Initializable {
     }
 
     private void configuraCambioFase() {
+        var gioco = this.giocoService.getGioco();
         Giocatore giocatore = gioco.getGiocatoreUmano();
 
         gioco.getFaseAttuale().subscribe((phase) -> {
@@ -86,9 +83,9 @@ public class MainController implements Initializable {
     }
 
     public void onCreaPartitaClick(ActionEvent evento) {
-        gioco.iniziaPartita(playerNameField.getText());
+        giocoService.iniziaPartita(playerNameField.getText());
+        var gioco = this.giocoService.getGioco();
 
-        // Ottieni il giocatore umano e registra un listener sulla sua proprietà isVivo
         Giocatore human = gioco.getGiocatoreUmano();
         human.isVivoProperty().addListener((_, _, newVivo) -> {
             if (newVivo != null && !newVivo) {
@@ -98,7 +95,7 @@ public class MainController implements Initializable {
         });
 
         var ruoloGiocatore = human.getRuolo();
-        gioco.logAction("Gioco avviato. Sei un " + ruoloGiocatore + ".");
+        this.giocoService.getStoricoAzioniService().registraAzione("Gioco avviato. Sei un " + ruoloGiocatore + ".");
         roleLabel.setText("Il tuo ruolo: " + ruoloGiocatore.toString());
 
         configuraCambioFase();
@@ -113,10 +110,10 @@ public class MainController implements Initializable {
         }
 
         var bersaglioDelGiocatore = playersList.getSelectionModel().getSelectedItem();
-        gioco.avviaVotazione(bersaglioDelGiocatore);
+        this.giocoService.getVotazioneService().avviaVotazione(bersaglioDelGiocatore);
         playersList.refresh();
     }
-    
+
     public void onIspezionaClick(ActionEvent evento) {
         if(ControllerUtils.nessunGiocatoreSelezionato(playersList)) {
             ControllerUtils.mostraAlertErrore("Seleziona un giocatore da ispezionare");
@@ -124,20 +121,19 @@ public class MainController implements Initializable {
         }
 
         var bersaglio = playersList.getSelectionModel().getSelectedItem();
+        var gioco =  this.giocoService.getGioco();
 
         if(bersaglio != null) {
             gioco.getGiocatoreUmano()
                     .ispezionaGiocatore(bersaglio)
                     .ifPresentOrElse(
-                            // Se sono un veggente:
-                            ruolo -> gioco.logAction("(Visibile solo a te) " + bersaglio.getNome()+ " è un " + ruolo),
-                            // Altrimenti:
-                            () -> gioco.logAction("Non puoi ispezionare questo giocatore.")
+                            ruolo -> this.giocoService.getStoricoAzioniService().registraAzione("(Visibile solo a te) " + bersaglio.getNome()+ " è un " + ruolo),
+                            () -> this.giocoService.getStoricoAzioniService().registraAzione("Non puoi ispezionare questo giocatore.")
                     );
         }
 
-        gioco.eseguiAzioniAi();
-        gioco.avanzaFase();
+        this.giocoService.eseguiAzioniAi();
+        this.giocoService.avanzaFase();
         playersList.refresh();
     }
 
@@ -146,6 +142,8 @@ public class MainController implements Initializable {
             ControllerUtils.mostraAlertErrore("Seleziona un giocatore da attaccare");
             return;
         }
+        var gioco = this.giocoService.getGioco();
+
         var giocatore = gioco.getGiocatoreUmano();
         var giocatoreBersaglio = playersList.getSelectionModel().getSelectedItem();
 
@@ -156,19 +154,19 @@ public class MainController implements Initializable {
 
         Optional<Boolean> esito = giocatore.attaccaGiocatore(giocatoreBersaglio);
         if(esito.isPresent()) {
-            gioco.logAction(giocatoreBersaglio.getNome() + " è stato ucciso da te.");
+            this.giocoService.getStoricoAzioniService().registraAzione(giocatoreBersaglio.getNome() + " è stato ucciso da te.");
 
-            gioco.eseguiAzioniAi();
+            this.giocoService.eseguiAzioniAi();
             playersList.getSelectionModel().clearSelection();
             playersList.refresh();
-            gioco.avanzaFase();
+            this.giocoService.avanzaFase();
         }
     }
 
     public void onAvanzaFaseClick(ActionEvent evento) {
-        gioco.eseguiAzioniAi();
-        gioco.avanzaFase();
-        log.info("Fase di gioco attuale: " + gioco.getFaseAttuale().toString());
+        this.giocoService.eseguiAzioniAi();
+        this.giocoService.avanzaFase();
+        log.info("Fase di gioco attuale: " + this.giocoService.getGioco().getFaseAttuale().toString());
         playersList.refresh();
 
     }
