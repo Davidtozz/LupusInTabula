@@ -10,7 +10,6 @@ import it.unicam.cs.mpgc.rpg125950.lupusintabula.util.ControllerUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import lombok.extern.java.Log;
@@ -33,6 +32,7 @@ public class MainController implements Initializable {
     @FXML public ListView<String> logList;
     @FXML public TextField playerNameField;
     @FXML public HBox playerActions;
+    @FXML public HBox startPanel;
     private Gioco gioco;
 
     @Override
@@ -43,6 +43,31 @@ public class MainController implements Initializable {
             gioco.getFaseAttuale().asString("Fase attuale: %s")
         );
         logList.setItems(gioco.getStoricoAzioniGioco());
+
+        CondizioneVittoria.getRisultatoVittoria().addListener((_, _, result) -> {
+            if (result != RisultatoVittoria.NON_SODDISFATTO) {
+                String msg = result == RisultatoVittoria.VITTORIA_CONTADINI
+                    ? "I Contadini vincono!" : "I Lupi vincono!";
+                ControllerUtils.disabilitaTutti(playerActions);
+                ControllerUtils.mostraAlertInformazione(msg);
+                resetToLobby();
+            }
+        });
+    }
+
+    private void resetToLobby() {
+        CondizioneVittoria.getRisultatoVittoria().set(RisultatoVittoria.NON_SODDISFATTO);
+        gioco = new Gioco();
+        playersList.setItems(gioco.getGiocatori());
+        phaseLabel.textProperty().bind(
+            gioco.getFaseAttuale().asString("Fase attuale: %s")
+        );
+        logList.setItems(gioco.getStoricoAzioniGioco());
+        ControllerUtils.nascondiElementi(phaseLabel, playersList, logList, playerActions);
+        ControllerUtils.mostraElementi(startPanel);
+        roleLabel.setText("");
+        statusLabel.setText("");
+        playerNameField.setText("Tu");
     }
 
     private void configuraCambioFase() {
@@ -67,19 +92,7 @@ public class MainController implements Initializable {
         human.isVivoProperty().addListener((_, _, newVivo) -> {
             if (newVivo != null && !newVivo) {
                 statusLabel.setText("Sei morto.");
-                for(Node button : playerActions.getChildren()){
-                    button.setDisable(!button.equals(advancePhaseButton));
-                }
-            }
-        });
-
-        CondizioneVittoria.getRisultatoVittoria().addListener((_, _, risultatoVittoria) -> {
-            if (risultatoVittoria != RisultatoVittoria.NON_SODDISFATTO) {
-                statusLabel.setText("Partita finita: " + risultatoVittoria.toString());
-                for (Node button : playerActions.getChildren()) {
-                    button.setDisable(true);
-                }
-                new Alert(Alert.AlertType.INFORMATION, risultatoVittoria.toString(), ButtonType.OK).showAndWait();
+                ControllerUtils.disabilitaTuttiEccetto(playerActions, advancePhaseButton);
             }
         });
 
@@ -93,8 +106,8 @@ public class MainController implements Initializable {
     }
 
     public void onVotaClick(ActionEvent evento) {
-        if(nessunGiocatoreSelezionato()) {
-            new Alert(Alert.AlertType.ERROR, "Seleziona un giocatore da votare", ButtonType.OK).showAndWait();
+        if(ControllerUtils.nessunGiocatoreSelezionato(playersList)) {
+            ControllerUtils.mostraAlertErrore("Seleziona un giocatore da votare");
             return;
         }
 
@@ -104,8 +117,8 @@ public class MainController implements Initializable {
     }
     
     public void onIspezionaClick(ActionEvent evento) {
-        if(nessunGiocatoreSelezionato()) {
-            new Alert(Alert.AlertType.ERROR, "Seleziona un giocatore) da ispezionare", ButtonType.OK).showAndWait();
+        if(ControllerUtils.nessunGiocatoreSelezionato(playersList)) {
+            ControllerUtils.mostraAlertErrore("Seleziona un giocatore da ispezionare");
             return;
         }
 
@@ -128,16 +141,15 @@ public class MainController implements Initializable {
     }
 
     public void onAttaccoClick(ActionEvent evento) {
-        if(nessunGiocatoreSelezionato()) {
-            new Alert(Alert.AlertType.ERROR, "Seleziona un giocatore da attaccare", ButtonType.OK).showAndWait();
+        if(ControllerUtils.nessunGiocatoreSelezionato(playersList)) {
+            ControllerUtils.mostraAlertErrore("Seleziona un giocatore da attaccare");
             return;
         }
         var giocatore = gioco.getGiocatoreUmano();
         var giocatoreBersaglio = playersList.getSelectionModel().getSelectedItem();
 
         if (giocatoreBersaglio == null || !giocatoreBersaglio.isVivo()) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Seleziona un bersaglio valido", ButtonType.YES);
-            alert.showAndWait();
+            ControllerUtils.mostraAlertErrore("Seleziona un bersaglio valido");
             return;
         }
 
@@ -162,21 +174,14 @@ public class MainController implements Initializable {
 
      private void mostraLayoutDiGioco() {
         ControllerUtils.mostraElementi(phaseLabel, playersList, logList, playerActions);
-        ControllerUtils.nascondiElementi(createGameButton);
+        ControllerUtils.nascondiElementi(startPanel);
     }
 
     private void mostraAzioniGiocatore(RuoloGiocatore role) {
         switch (role) {
-            case RuoloGiocatore.LUPO, RuoloGiocatore.CONTADINO -> ControllerUtils.nascondiElementi(inspectButton);
-            case RuoloGiocatore.VEGGENTE -> ControllerUtils.nascondiElementi(buttonAttacca);
+            case RuoloGiocatore.LUPO, RuoloGiocatore.CONTADINO -> ControllerUtils.nascondiERimuoviElementi(inspectButton);
+            case RuoloGiocatore.VEGGENTE -> ControllerUtils.nascondiERimuoviElementi(buttonAttacca);
         }
-    }
-
-    /**
-     * @return true se non è stato selezionato alcun giocatore nella lista, false altrimenti
-     * */
-    private boolean nessunGiocatoreSelezionato() {
-        return playersList.getSelectionModel().isEmpty();
     }
 
 }

@@ -11,8 +11,9 @@ import java.util.List;
 public final class GiocoUtils {
     public static List<GiocatoreAi> generaGiocatoriAi(int numero, RuoloGiocatore ruoloGiocatore){
         List<GiocatoreAi> giocatoriAi = new ArrayList<>();
-        // Tengo traccia delle figure speciali
-        int lupiConsentiti = (ruoloGiocatore == RuoloGiocatore.LUPO) ? 1 : 2;
+        int totale = 1 + numero; // '1' è il giocatore umano
+        int maxLupi = (totale > 5) ? 2 : 1;
+        int lupiConsentiti = (ruoloGiocatore == RuoloGiocatore.LUPO) ? maxLupi - 1 : maxLupi;
         int veggentiConsentiti = (ruoloGiocatore == RuoloGiocatore.VEGGENTE) ? 0 : 1;
 
         for (int i = 0; i < numero; i++) {

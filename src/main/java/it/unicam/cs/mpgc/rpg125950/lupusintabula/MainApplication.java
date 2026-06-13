@@ -28,6 +28,7 @@ public final class MainApplication extends Application {
     public void start(@NotNull Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("main.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1280, 720);
+        scene.getStylesheets().add(MainApplication.class.getResource("style.css").toExternalForm());
         stage.setTitle("LupusInTabula");
         stage.setScene(scene);
         stage.show();
