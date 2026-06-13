@@ -1,8 +1,10 @@
 package it.unicam.cs.mpgc.rpg125950.lupusintabula.controller;
 
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.CondizioneVittoria;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Giocatore;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Gioco;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.FaseGioco;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RisultatoVittoria;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RuoloGiocatore;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.util.ControllerUtils;
 import javafx.event.ActionEvent;
@@ -68,6 +70,16 @@ public class MainController implements Initializable {
                 for(Node button : playerActions.getChildren()){
                     button.setDisable(!button.equals(advancePhaseButton));
                 }
+            }
+        });
+
+        CondizioneVittoria.getRisultatoVittoria().addListener((_, _, risultatoVittoria) -> {
+            if (risultatoVittoria != RisultatoVittoria.NON_SODDISFATTO) {
+                statusLabel.setText("Partita finita: " + risultatoVittoria.toString());
+                for (Node button : playerActions.getChildren()) {
+                    button.setDisable(true);
+                }
+                new Alert(Alert.AlertType.INFORMATION, risultatoVittoria.toString(), ButtonType.OK).showAndWait();
             }
         });
 

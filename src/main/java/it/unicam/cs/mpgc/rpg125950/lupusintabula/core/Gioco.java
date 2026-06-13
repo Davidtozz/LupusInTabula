@@ -47,7 +47,7 @@ public final class Gioco {
         var giocatoriRimasti = giocatori.stream().filter(Giocatore::isVivo).toList();
         for(Giocatore g : giocatoriRimasti) {
             if(!(g instanceof GiocatoreAi ai)) continue;
-            String logAzioneEseguita = ai.eseguiAzione(giocatori, this.faseAttuale.get());
+            String logAzioneEseguita = ai.eseguiAzione(giocatoriRimasti, this.faseAttuale.get());
             if (!logAzioneEseguita.isEmpty()) {
                 this.logAction(logAzioneEseguita);
             }
@@ -73,6 +73,7 @@ public final class Gioco {
         giocatoreOggettoVotazione.setVivo(false);
 
         this.logAction("Il villaggio ha deciso: " + giocatoreOggettoVotazione.getNome() + " è stato linciato!");
+        CondizioneVittoria.controllaCondizione(giocatoriVivi);
         this.avanzaFase();
     }
 

@@ -16,7 +16,7 @@ public final class GiocatoreAi extends Giocatore {
         log.info("Giocatore AI " + nome + " creato con ruolo " + ruolo);
     }
 
-    public String eseguiAzione(ObservableList<Giocatore> bersagliPossibili, FaseGioco faseAttuale) {
+    public String eseguiAzione(List<Giocatore> bersagliPossibili, FaseGioco faseAttuale) {
         if (faseAttuale == FaseGioco.NOTTE_LUPI && this.isLupo()) {
             Giocatore bersaglio = ottieniBersaglio(bersagliPossibili, giocatore -> !giocatore.isLupo());
             if (bersaglio == null || !bersaglio.isVivo())
@@ -48,6 +48,7 @@ public final class GiocatoreAi extends Giocatore {
 
     private Giocatore ottieniBersaglio(List<Giocatore> bersagliPossibili, Predicate<Giocatore> extraFilter) {
         var bersagliValidi = bersagliPossibili.stream()
+                .filter(Giocatore::isVivo)
                 .filter(g -> !g.equals(this))
                 .filter(extraFilter)
                 .toList();
