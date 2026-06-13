@@ -1,6 +1,5 @@
-package it.unicam.cs.mpgc.rpg125950.lupusintabula.core;
+package it.unicam.cs.mpgc.rpg125950.lupusintabula.models;
 
-import javafx.collections.ObservableList;
 import lombok.extern.java.Log;
 
 import java.util.Collections;

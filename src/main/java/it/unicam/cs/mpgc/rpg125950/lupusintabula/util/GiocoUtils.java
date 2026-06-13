@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg125950.lupusintabula.util;
 
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.GiocatoreAi;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.GiocatoreAi;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RuoloGiocatore;
 import lombok.extern.java.Log;
 

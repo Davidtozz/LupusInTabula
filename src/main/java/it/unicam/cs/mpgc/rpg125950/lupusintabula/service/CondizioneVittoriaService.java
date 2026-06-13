@@ -1,5 +1,6 @@
-package it.unicam.cs.mpgc.rpg125950.lupusintabula.core;
+package it.unicam.cs.mpgc.rpg125950.lupusintabula.service;
 
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.Giocatore;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RisultatoVittoria;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Getter;
@@ -7,12 +8,17 @@ import lombok.extern.java.Log;
 
 import java.util.List;
 
-@Log
-public final class CondizioneVittoria {
-    @Getter
-    private static SimpleObjectProperty<RisultatoVittoria> risultatoVittoria = new SimpleObjectProperty<>(RisultatoVittoria.NON_SODDISFATTO);
+interface ICondizioneVittoriaService {
+    void controllaCondizione(List<Giocatore> giocatori);
+}
 
-    public static void controllaCondizione(List<Giocatore> giocatori) {
+@Log
+public final class CondizioneVittoriaService implements ICondizioneVittoriaService {
+    @Getter
+    private final SimpleObjectProperty<RisultatoVittoria> risultatoVittoria = new SimpleObjectProperty<>(RisultatoVittoria.NON_SODDISFATTO);
+
+    @Override
+    public void controllaCondizione(List<Giocatore> giocatori) {
         long lupiVivi = giocatori.stream().filter(g -> g.isVivo() && g.isLupo()).count();
         long viviTotali = giocatori.stream().filter(Giocatore::isVivo).count();
 
