@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg125950.lupusintabula.service;
 
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Giocatore;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.Giocatore;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RisultatoVittoria;
 import javafx.beans.property.SimpleObjectProperty;
 import lombok.Getter;

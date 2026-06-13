@@ -1,13 +1,17 @@
 package it.unicam.cs.mpgc.rpg125950.lupusintabula.service;
 
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Giocatore;
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Gioco;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.DatiPartita;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.Giocatore;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.Gioco;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.FaseGioco;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RuoloGiocatore;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.repository.GiocoRepository;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.util.GiocoUtils;
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.GiocatoreAi;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.GiocatoreAi;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RisultatoVittoria;
 import lombok.Getter;
+
+import java.util.List;
 
 interface IGiocoService {
     void iniziaPartita(String nomeGiocatoreUmano);
@@ -15,6 +19,28 @@ interface IGiocoService {
 }
 
 public final class GiocoService implements IGiocoService {
+    public void salvaPartita(String vincitore) {
+        giocoRepository.salvaDatiPartita(gioco, vincitore);
+    }
+
+    public static String calcolaVincitore(Gioco gioco) {
+        long lupiVivi = gioco.getGiocatori().stream()
+                .filter(Giocatore::isVivo).filter(Giocatore::isLupo).count();
+        long viviTotali = gioco.getGiocatori().stream()
+                .filter(Giocatore::isVivo).count();
+        if (lupiVivi == 0) return "Contadini";
+        if (lupiVivi >= viviTotali - lupiVivi) return "Lupi";
+        return "In corso";
+    }
+
+    public List<DatiPartita> listaSalvataggi() {
+        return giocoRepository.listaSalvataggi();
+    }
+
+    public String dettaglioSalvataggio(String nomeFile) {
+        return giocoRepository.dettaglioSalvataggio(nomeFile);
+    }
+
     @Getter
     private Gioco gioco;
     @Getter
@@ -29,7 +55,7 @@ public final class GiocoService implements IGiocoService {
         this.gioco = gioco;
         this.storicoAzioniService = new StoricoAzioniService(gioco.getStoricoAzioniGioco());
         this.votazioneService = new VotazioneService(this, this.storicoAzioniService);
-        this.giocoRepository = new GiocoRepository(this);
+        this.giocoRepository = new GiocoRepository();
     }
     @Override
     public void iniziaPartita(String nomeGiocatoreUmano) {

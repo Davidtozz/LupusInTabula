@@ -1,4 +1,4 @@
-package it.unicam.cs.mpgc.rpg125950.lupusintabula.core;
+package it.unicam.cs.mpgc.rpg125950.lupusintabula.models;
 
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.FaseGioco;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RuoloGiocatore;
@@ -61,11 +61,11 @@ public final class GiocatoreAi extends Giocatore {
         return ottieniBersaglio(bersagliPossibili, Objects::nonNull);
     }
 
-    private Giocatore ottieniBersaglio(List<Giocatore> bersagliPossibili, Predicate<Giocatore> extraFilter) {
+    private Giocatore ottieniBersaglio(List<Giocatore> bersagliPossibili, Predicate<Giocatore> filtro) {
         var bersagliValidi = bersagliPossibili.stream()
                 .filter(Giocatore::isVivo)
                 .filter(g -> !g.equals(this))
-                .filter(extraFilter)
+                .filter(filtro)
                 .toList();
         if (bersagliValidi.isEmpty()) return null;
         return bersagliValidi.get((int) (Math.random() * bersagliValidi.size()));

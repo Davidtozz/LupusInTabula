@@ -57,5 +57,6 @@
         <TextField fx:id="playerNameField" text="Tu"
                    promptText="Inserisci il tuo nome"/>
         <Button fx:id="avviaGiocoButton" text="Inizia partita" onAction="#onCreaPartitaClick"/>
+        <Button fx:id="visualizzaSalvataggiButton" text="Salvataggi" onAction="#onVisualizzaSalvataggiClick"/>
     </HBox>
 </VBox>

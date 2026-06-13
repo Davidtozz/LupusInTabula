@@ -1,4 +1,4 @@
-package it.unicam.cs.mpgc.rpg125950.lupusintabula.core;
+package it.unicam.cs.mpgc.rpg125950.lupusintabula.models;
 
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.*;
 import javafx.beans.property.SimpleObjectProperty;

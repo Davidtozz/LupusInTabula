@@ -1,8 +1,8 @@
 package it.unicam.cs.mpgc.rpg125950.lupusintabula.service;
 
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Giocatore;
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.GiocatoreAi;
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Votazione;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.Giocatore;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.GiocatoreAi;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.Votazione;
 
 interface IVotazioneService {
     void avviaVotazione(Giocatore bersaglioGiocatoreUmano);

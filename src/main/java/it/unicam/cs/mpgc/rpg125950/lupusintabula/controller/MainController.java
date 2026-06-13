@@ -1,7 +1,8 @@
 package it.unicam.cs.mpgc.rpg125950.lupusintabula.controller;
 
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Giocatore;
-import it.unicam.cs.mpgc.rpg125950.lupusintabula.core.Gioco;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.DatiPartita;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.Giocatore;
+import it.unicam.cs.mpgc.rpg125950.lupusintabula.models.Gioco;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.FaseGioco;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RisultatoVittoria;
 import it.unicam.cs.mpgc.rpg125950.lupusintabula.enums.RuoloGiocatore;
@@ -15,6 +16,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import lombok.extern.java.Log;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -32,9 +34,11 @@ public class MainController implements Initializable {
     @FXML public ListView<Giocatore> playersList;
     @FXML public ListView<String> logList;
     @FXML public TextField playerNameField;
+    @FXML public Button visualizzaSalvataggiButton;
     @FXML public HBox playerActions;
     @FXML public HBox startPanel;
     private GiocoService giocoService;
+    private boolean partitaAbbandonata;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -42,6 +46,7 @@ public class MainController implements Initializable {
     }
 
     private void initLobby() {
+        this.partitaAbbandonata = false;
         this.giocoService = new GiocoService(new Gioco());
         var gioco = this.giocoService.getGioco();
         playersList.setItems(gioco.getGiocatori());
@@ -51,11 +56,22 @@ public class MainController implements Initializable {
         logList.setItems(gioco.getStoricoAzioniGioco());
 
         this.giocoService.getCondizioneVittoriaService().getRisultatoVittoria().addListener((_, _, result) -> {
-            if (result != RisultatoVittoria.NON_SODDISFATTO) {
+            if (result != RisultatoVittoria.NON_SODDISFATTO && !partitaAbbandonata) {
                 String msg = result == RisultatoVittoria.VITTORIA_CONTADINI
                     ? "I Contadini vincono!" : "I Lupi vincono!";
                 ControllerUtils.disabilitaTuttiEccetto(playerActions, avanzaFaseButton);
                 ControllerUtils.mostraAlertInformazione(msg);
+
+                String vincitore = result == RisultatoVittoria.VITTORIA_CONTADINI
+                    ? "Contadini" : "Lupi";
+                Alert alertSalva = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Vuoi salvare questa partita?", ButtonType.YES, ButtonType.NO);
+                alertSalva.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.YES) {
+                        giocoService.salvaPartita(vincitore);
+                    }
+                });
+
                 Platform.runLater(this::initLobby);
             }
         });
@@ -91,6 +107,24 @@ public class MainController implements Initializable {
             if (newVivo != null && !newVivo) {
                 statusLabel.setText("Sei morto.");
                 ControllerUtils.disabilitaTuttiEccetto(playerActions, avanzaFaseButton);
+                ControllerUtils.mostraAlertInformazione("Sei morto! Il gioco continua senza di te.");
+
+                Alert alertSalva = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Vuoi salvare questa partita?", ButtonType.YES, ButtonType.NO);
+                alertSalva.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.YES) {
+                        giocoService.salvaPartita(GiocoService.calcolaVincitore(gioco));
+                    }
+                });
+
+                Alert alertNuovaPartita = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Tornare al menu principale?", ButtonType.YES, ButtonType.NO);
+                alertNuovaPartita.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.YES) {
+                        partitaAbbandonata = true;
+                        Platform.runLater(this::initLobby);
+                    }
+                });
             }
         });
 
@@ -121,7 +155,7 @@ public class MainController implements Initializable {
         }
 
         var bersaglio = playersList.getSelectionModel().getSelectedItem();
-        var gioco =  this.giocoService.getGioco();
+        var gioco = this.giocoService.getGioco();
 
         if(bersaglio != null) {
             gioco.getGiocatoreUmano()
@@ -171,9 +205,41 @@ public class MainController implements Initializable {
 
     }
 
-     private void mostraLayoutDiGioco() {
+    private void mostraLayoutDiGioco() {
         ControllerUtils.mostraElementi(phaseLabel, playersList, logList, playerActions);
         ControllerUtils.nascondiElementi(startPanel);
+    }
+
+    public void onVisualizzaSalvataggiClick(ActionEvent evento) {
+        List<DatiPartita> salvataggi = giocoService.listaSalvataggi();
+        if (salvataggi.isEmpty()) {
+            ControllerUtils.mostraAlertInformazione("Nessun salvataggio trovato.");
+            return;
+        }
+
+        ListView<DatiPartita> listView = new ListView<>();
+        listView.getItems().setAll(salvataggi);
+        listView.setPrefWidth(500);
+        listView.setPrefHeight(300);
+
+        listView.getSelectionModel().selectedItemProperty().addListener((_, _, selezionato) -> {
+            if (selezionato == null) return;
+            String dettagli = giocoService.dettaglioSalvataggio(selezionato.nomeFile());
+            TextArea area = new TextArea(dettagli);
+            area.setEditable(false);
+            area.setPrefWidth(500);
+            area.setPrefHeight(400);
+            Alert dettaglioAlert = new Alert(Alert.AlertType.INFORMATION);
+            dettaglioAlert.setTitle(selezionato.nomeFile());
+            dettaglioAlert.getDialogPane().setContent(area);
+            dettaglioAlert.showAndWait();
+            listView.getSelectionModel().clearSelection();
+        });
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Salvataggi disponibili");
+        alert.getDialogPane().setContent(listView);
+        alert.showAndWait();
     }
 
     private void mostraAzioniGiocatore(RuoloGiocatore role) {
